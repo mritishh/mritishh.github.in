@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Dashboard — FY 2025–26</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060a10;
+    --surface: #0d1420;
+    --surface2: #111a28;
+    --border: #1e2d42;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #a78bfa;
+    --accent4: #34d399;
+    --text: #e8f4fd;
+    --muted: #5a7a9a;
+    --muted2: #8ba8c4;
+    --glow: rgba(0, 212, 255, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; padding: 24px 28px; max-width: 1600px; margin: 0 auto; }
+
+  /* ─── HEADER ─────────────────────────────────────────── */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 4px; }
+
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted2);
+    margin-top: 2px;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 8px;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent4);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent4);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,0.08); }
+
+  /* ─── KPI ROW ─────────────────────────────────────────── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .kpi-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent), transparent); }
+  .kpi-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent2), transparent); }
+  .kpi-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent3), transparent); }
+  .kpi-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent4), transparent); }
+
+  .kpi-card:hover { transform: translateY(-2px); border-color: #2a3f58; }
+
+  .kpi-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .kpi-value {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .kpi-card:nth-child(1) .kpi-value { color: var(--accent); }
+  .kpi-card:nth-child(2) .kpi-value { color: var(--accent2); }
+  .kpi-card:nth-child(3) .kpi-value { color: var(--accent3); }
+  .kpi-card:nth-child(4) .kpi-value { color: var(--accent4); }
+
+  .kpi-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted2);
+  }
+
+  .kpi-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 36px;
+    opacity: 0.08;
+  }
+
+  /* ─── MAIN GRID ───────────────────────────────────────── */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .chart-card.span-full { grid-column: 1 / -1; }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text);
+  }
+
+  .card-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  canvas { display: block; }
+
+  /* ─── SALES REP TABLE ─────────────────────────────────── */
+  .rep-table { width: 100%; }
+
+  .rep-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(30,45,66,0.5);
+    transition: background 0.15s;
+  }
+
+  .rep-row:last-child { border-bottom: none; }
+
+  .rep-rank {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .rep-info { display: flex; flex-direction: column; gap: 4px; }
+
+  .rep-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  .rep-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 2px; }
+
+  .rep-bar { height: 3px; border-radius: 2px; transition: width 1s ease; }
+
+  .rep-revenue {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .rep-orders {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  /* ─── CHANNEL/SEGMENT PILLS ──────────────────────────── */
+  .donut-section { display: flex; flex-direction: column; gap: 8px; }
+
+  .donut-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto 16px; }
+
+  .legend-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .legend-dot-label { display: flex; align-items: center; gap: 8px; }
+
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  .legend-label { font-size: 12px; color: var(--muted2); }
+
+  .legend-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* ─── PRODUCT BARS ────────────────────────────────────── */
+  .product-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .product-item { display: flex; flex-direction: column; gap: 4px; }
+
+  .product-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .product-name { font-size: 12px; color: var(--muted2); }
+
+  .product-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .product-bar-wrap { height: 4px; background: var(--border); border-radius: 2px; }
+
+  .product-bar { height: 4px; border-radius: 2px; transition: width 1.2s ease; }
+
+  /* ─── FOOTER ──────────────────────────────────────────── */
+  footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── ANIMATIONS ─────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .kpi-card { animation: fadeUp 0.5s ease both; }
+  .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+  .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+  .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+  .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+  .chart-card { animation: fadeUp 0.5s ease both; animation-delay: 0.25s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <span class="header-tag">// analytics · sales intelligence</span>
+      <h1>Sales Performance Dashboard</h1>
+      <div class="header-sub">FY 2025–2026 &nbsp;·&nbsp; 1,000 Transactions &nbsp;·&nbsp; Hyderabad Region</div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><span class="live-dot"></span>Live Data</div>
+      <button class="filter-btn active" onclick="filterData('all')">All Time</button>
+      <button class="filter-btn" onclick="filterData('2026')">2026</button>
+      <button class="filter-btn" onclick="filterData('2025')">2025</button>
+    </div>
+  </header>
+
+  <!-- KPI ROW -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value" id="kpi-revenue">₹24.07 Cr</div>
+      <div class="kpi-sub">1,000 transactions processed</div>
+      <div class="kpi-icon">₹</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total Orders</div>
+      <div class="kpi-value" id="kpi-orders">1,000</div>
+      <div class="kpi-sub">Avg. 52.6 orders/month</div>
+      <div class="kpi-icon">📦</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Units Sold</div>
+      <div class="kpi-value" id="kpi-units">10,529</div>
+      <div class="kpi-sub">Avg. 10.5 units/order</div>
+      <div class="kpi-icon">📊</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Avg. Order Value</div>
+      <div class="kpi-value" id="kpi-aov">₹2.41 L</div>
+      <div class="kpi-sub">Avg. 10.1% discount applied</div>
+      <div class="kpi-icon">⚡</div>
+    </div>
+  </div>
+
+  <!-- MAIN CHARTS -->
+  <div class="main-grid">
+
+    <!-- Monthly Revenue Trend -->
+    <div class="chart-card" style="grid-column: 1 / -1;">
+      <div class="card-header">
+        <span class="card-title">Monthly Revenue Trend</span>
+        <span class="card-tag">Jun 2025 → Dec 2026</span>
+      </div>
+      <canvas id="monthlyChart" height="90"></canvas>
+    </div>
+
+    <!-- Top Products -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">Top Products by Revenue</span>
+        <span class="card-tag">₹ Crore</span>
+      </div>
+      <canvas id="productChart" height="200"></canvas>
+    </div>
+
+    <!-- Sales Rep Leaderboard -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">Sales Rep Leaderboard</span>
+        <span class="card-tag">Revenue Contribution</span>
+      </div>
+      <div class="rep-table" id="repTable"></div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-grid">
+
+    <!-- Sales Channel -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">Sales by Channel</span>
+        <span class="card-tag">Distribution</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:24px;">
+        <div class="donut-wrap" style="width:150px;height:150px;flex-shrink:0;">
+          <canvas id="channelChart" width="150" height="150"></canvas>
+        </div>
+        <div class="legend-list" id="channelLegend" style="flex:1;"></div>
+      </div>
+    </div>
+
+    <!-- Customer Segment -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">Customer Segments</span>
+        <span class="card-tag">Revenue Split</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:24px;">
+        <div style="width:150px;height:150px;flex-shrink:0;">
+          <canvas id="segmentChart" width="150" height="150"></canvas>
+        </div>
+        <div class="legend-list" id="segmentLegend" style="flex:1;"></div>
+      </div>
+    </div>
+
+    <!-- Top Cities -->
+    <div class="chart-card">
+      <div class="card-header">
+        <span class="card-title">Top Cities</span>
+        <span class="card-tag">Revenue Ranking</span>
+      </div>
+      <div class="product-list" id="cityList"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-text">Source: Sales_Dashboard_Dataset.xlsx &nbsp;·&nbsp; 1,000 records &nbsp;·&nbsp; FY 2025–26</div>
+    <div class="footer-text">Built with Chart.js &nbsp;·&nbsp; Interactive Sales Intelligence</div>
+  </footer>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────
+const DATA = {
+  all: {
+    kpi: { revenue: '₹24.07 Cr', orders: '1,000', units: '10,529', aov: '₹2.41 L' },
+    monthly: {
+      labels: ['Jun\'25','Jul\'25','Aug\'25','Sep\'25','Oct\'25','Nov\'25','Dec\'25',
+               'Jan\'26','Feb\'26','Mar\'26','Apr\'26','May\'26','Jun\'26',
+               'Jul\'26','Aug\'26','Sep\'26','Oct\'26','Nov\'26','Dec\'26'],
+      values: [0.73,6.31,6.87,8.19,7.04,7.44,6.52,22.12,20.24,17.98,
+               14.38,15.92,14.86,16.94,15.87,14.32,14.90,15.56,14.48]
+    },
+    products: {
+      labels: ['USB Drives','Staple Pins','Stapler','Scissors','Paper Punch','Staple Remover','Gun Tacker','Paper Cutter'],
+      values: [53.89, 43.05, 39.40, 24.61, 22.98, 22.64, 18.94, 15.18]
+    },
+    channel: {
+      labels: ['Distributor','Online','Retail'],
+      values: [81.97, 79.40, 79.33]
+    },
+    segment: {
+      labels: ['Corporate','Small Business','Consumer'],
+      values: [87.13, 79.33, 74.24]
+    },
+    reps: [
+      { name: 'Syed Farooq', revenue: 65.95, orders: 261, pct: 100 },
+      { name: 'Chandramouli', revenue: 61.65, orders: 271, pct: 93 },
+      { name: 'Laxmikanth', revenue: 56.94, orders: 242, pct: 86 },
+      { name: 'Ashok Kumar', revenue: 56.17, orders: 226, pct: 85 }
+    ],
+    cities: [
+      { name: 'Hyderabad', value: 82.05 },
+      { name: 'Vijayawada', value: 44.43 },
+      { name: 'Jagityal', value: 36.36 },
+      { name: 'Warangal', value: 22.86 },
+      { name: 'General Bazaar', value: 20.06 },
+      { name: 'Siddipet', value: 19.33 }
+    ]
+  },
+  '2026': {
+    kpi: { revenue: '₹21.19 Cr', orders: '851', units: '8,942', aov: '₹2.49 L' },
+    monthly: {
+      labels: ['Jan\'26','Feb\'26','Mar\'26','Apr\'26','May\'26','Jun\'26',
+               'Jul\'26','Aug\'26','Sep\'26','Oct\'26','Nov\'26','Dec\'26'],
+      values: [22.12,20.24,17.98,14.38,15.92,14.86,16.94,15.87,14.32,14.90,15.56,14.48]
+    },
+    products: {
+      labels: ['USB Drives','Staple Pins','Stapler','Scissors','Paper Punch','Staple Remover','Gun Tacker','Paper Cutter'],
+      values: [44.20, 35.80, 32.10, 20.40, 19.20, 18.90, 15.60, 12.10]
+    },
+    channel: { labels: ['Distributor','Online','Retail'], values: [68.50, 66.80, 66.20] },
+    segment: { labels: ['Corporate','Small Business','Consumer'], values: [72.10, 66.50, 62.90] },
+    reps: [
+      { name: 'Syed Farooq', revenue: 54.80, orders: 219, pct: 100 },
+      { name: 'Chandramouli', revenue: 51.20, orders: 227, pct: 93 },
+      { name: 'Laxmikanth', revenue: 47.40, orders: 202, pct: 87 },
+      { name: 'Ashok Kumar', revenue: 46.20, orders: 189, pct: 84 }
+    ],
+    cities: [
+      { name: 'Hyderabad', value: 67.90 },
+      { name: 'Vijayawada', value: 36.80 },
+      { name: 'Jagityal', value: 30.10 },
+      { name: 'Warangal', value: 19.20 },
+      { name: 'General Bazaar', value: 16.80 },
+      { name: 'Siddipet', value: 16.20 }
+    ]
+  },
+  '2025': {
+    kpi: { revenue: '₹4.29 Cr', orders: '149', units: '1,587', aov: '₹2.88 L' },
+    monthly: {
+      labels: ['Jun\'25','Jul\'25','Aug\'25','Sep\'25','Oct\'25','Nov\'25','Dec\'25'],
+      values: [0.73,6.31,6.87,8.19,7.04,7.44,6.52]
+    },
+    products: {
+      labels: ['USB Drives','Staple Pins','Stapler','Scissors','Paper Punch','Staple Remover','Gun Tacker','Paper Cutter'],
+      values: [9.69, 7.25, 7.30, 4.21, 3.78, 3.74, 3.34, 3.08]
+    },
+    channel: { labels: ['Distributor','Online','Retail'], values: [14.80, 14.60, 13.10] },
+    segment: { labels: ['Corporate','Small Business','Consumer'], values: [16.00, 14.80, 11.34] },
+    reps: [
+      { name: 'Syed Farooq', revenue: 11.15, orders: 42, pct: 100 },
+      { name: 'Chandramouli', revenue: 10.45, orders: 44, pct: 94 },
+      { name: 'Laxmikanth', revenue: 9.54, orders: 40, pct: 86 },
+      { name: 'Ashok Kumar', revenue: 9.97, orders: 37, pct: 89 }
+    ],
+    cities: [
+      { name: 'Hyderabad', value: 14.15 },
+      { name: 'Vijayawada', value: 7.63 },
+      { name: 'Jagityal', value: 6.26 },
+      { name: 'Warangal', value: 3.66 },
+      { name: 'General Bazaar', value: 3.26 },
+      { name: 'Siddipet', value: 3.13 }
+    ]
+  }
+};
+
+const COLORS = {
+  accent:  '#00d4ff',
+  accent2: '#ff6b35',
+  accent3: '#a78bfa',
+  accent4: '#34d399',
+  accent5: '#f59e0b',
+  accent6: '#ec4899',
+};
+const COLOR_LIST = Object.values(COLORS);
+
+// ─── CHART DEFAULTS ───────────────────────────────────────
+Chart.defaults.color = '#5a7a9a';
+Chart.defaults.font.family = "'DM Mono', monospace";
+
+const gridColor = 'rgba(30,45,66,0.7)';
+
+// ─── BUILD CHARTS ─────────────────────────────────────────
+let monthlyChart, productChart, channelChart, segmentChart;
+
+function buildMonthly(data) {
+  const ctx = document.getElementById('monthlyChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+  gradient.addColorStop(0, 'rgba(0,212,255,0.25)');
+  gradient.addColorStop(1, 'rgba(0,212,255,0)');
+
+  if (monthlyChart) monthlyChart.destroy();
+  monthlyChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        label: 'Revenue (₹ Cr)',
+        data: data.values,
+        borderColor: COLORS.accent,
+        backgroundColor: gradient,
+        borderWidth: 2.5,
+        pointBackgroundColor: COLORS.accent,
+        pointBorderColor: '#060a10',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1420',
+          borderColor: '#1e2d42',
+          borderWidth: 1,
+          titleColor: '#00d4ff',
+          bodyColor: '#e8f4fd',
+          callbacks: {
+            label: ctx => ` ₹${ctx.parsed.y.toFixed(2)} Cr`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { font: { size: 10 } }
+        },
+        y: {
+          grid: { color: gridColor },
+          ticks: {
+            font: { size: 10 },
+            callback: v => '₹' + v + ' Cr'
+          }
+        }
+      }
+    }
+  });
+}
+
+function buildProducts(data) {
+  const ctx = document.getElementById('productChart').getContext('2d');
+  if (productChart) productChart.destroy();
+  productChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        data: data.values,
+        backgroundColor: data.labels.map((_, i) => COLOR_LIST[i % COLOR_LIST.length] + 'cc'),
+        borderColor: data.labels.map((_, i) => COLOR_LIST[i % COLOR_LIST.length]),
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1420',
+          borderColor: '#1e2d42',
+          borderWidth: 1,
+          titleColor: '#e8f4fd',
+          bodyColor: '#00d4ff',
+          callbacks: { label: ctx => ` ₹${ctx.parsed.x.toFixed(2)} Cr` }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { font: { size: 9 }, callback: v => '₹' + v }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function buildDonut(canvasId, legendId, data, colors) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  let chart;
+  if (canvasId === 'channelChart') {
+    if (channelChart) channelChart.destroy();
+    channelChart = buildDonutChart(ctx, data, colors);
+  } else {
+    if (segmentChart) segmentChart.destroy();
+    segmentChart = buildDonutChart(ctx, data, colors);
+  }
+
+  // Legend
+  const total = data.values.reduce((a, b) => a + b, 0);
+  const legendEl = document.getElementById(legendId);
+  legendEl.innerHTML = data.labels.map((label, i) => `
+    <div class="legend-item">
+      <div class="legend-dot-label">
+        <div class="legend-dot" style="background:${colors[i]}"></div>
+        <span class="legend-label">${label}</span>
+      </div>
+      <span class="legend-val">${(data.values[i]/total*100).toFixed(1)}%</span>
+    </div>
+  `).join('');
+}
+
+function buildDonutChart(ctx, data, colors) {
+  return new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: data.labels,
+      datasets: [{
+        data: data.values,
+        backgroundColor: colors.map(c => c + 'cc'),
+        borderColor: colors,
+        borderWidth: 1.5,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      cutout: '68%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1420',
+          borderColor: '#1e2d42',
+          borderWidth: 1,
+          titleColor: '#e8f4fd',
+          bodyColor: '#00d4ff',
+          callbacks: { label: ctx => ` ₹${ctx.parsed.toFixed(2)} Cr` }
+        }
+      }
+    }
+  });
+}
+
+function buildReps(reps) {
+  const repColors = [COLORS.accent, COLORS.accent2, COLORS.accent3, COLORS.accent4];
+  document.getElementById('repTable').innerHTML = reps.map((rep, i) => `
+    <div class="rep-row">
+      <div class="rep-rank">#${i+1}</div>
+      <div class="rep-info">
+        <div class="rep-name">${rep.name}</div>
+        <div class="rep-bar-wrap">
+          <div class="rep-bar" style="width:${rep.pct}%; background:${repColors[i]};"></div>
+        </div>
+      </div>
+      <div>
+        <div class="rep-revenue" style="color:${repColors[i]}">₹${rep.revenue.toFixed(2)} Cr</div>
+        <div class="rep-orders">${rep.orders} orders</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function buildCities(cities) {
+  const max = cities[0].value;
+  const cityColors = [COLORS.accent, COLORS.accent2, COLORS.accent3, COLORS.accent4, COLORS.accent5, COLORS.accent6];
+  document.getElementById('cityList').innerHTML = cities.map((c, i) => `
+    <div class="product-item">
+      <div class="product-meta">
+        <span class="product-name">${c.name}</span>
+        <span class="product-val">₹${c.value.toFixed(2)} Cr</span>
+      </div>
+      <div class="product-bar-wrap">
+        <div class="product-bar" style="width:${(c.value/max*100).toFixed(1)}%; background:${cityColors[i]};"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateKPIs(kpi) {
+  document.getElementById('kpi-revenue').textContent = kpi.revenue;
+  document.getElementById('kpi-orders').textContent = kpi.orders;
+  document.getElementById('kpi-units').textContent = kpi.units;
+  document.getElementById('kpi-aov').textContent = kpi.aov;
+}
+
+function renderAll(key) {
+  const d = DATA[key];
+  updateKPIs(d.kpi);
+  buildMonthly(d.monthly);
+  buildProducts(d.products);
+  buildDonut('channelChart', 'channelLegend', d.channel,
+    [COLORS.accent, COLORS.accent2, COLORS.accent3]);
+  buildDonut('segmentChart', 'segmentLegend', d.segment,
+    [COLORS.accent3, COLORS.accent4, COLORS.accent5]);
+  buildReps(d.reps);
+  buildCities(d.cities);
+}
+
+function filterData(key) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderAll(key);
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+renderAll('all');
+</script>
+</body>
+</html>
