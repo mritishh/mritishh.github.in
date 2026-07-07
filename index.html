@@ -190,11 +190,15 @@ h2.sec-title .dim{color:var(--dim)}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ── CERTS ── */
-.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.ccard{border:1px solid var(--border);background:var(--card);padding:26px;border-radius:8px;transition:all .3s;position:relative;overflow:hidden}
-.ccard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--teal));transform:scaleX(0);transform-origin:left;transition:transform .4s}
+.cgrid{display:flex;flex-direction:column;gap:16px}
+.ccard{min-width:0;border:1px solid var(--border);background:var(--card);border-radius:8px;transition:all .3s;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.ccard::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--teal));transform:scaleX(0);transform-origin:left;transition:transform .4s;z-index:2}
 .ccard:hover{transform:translateY(-4px);border-color:var(--border-hi)}
 .ccard:hover::after{transform:scaleX(1)}
+.ccard-img-wrap{width:100%;min-width:0;height:120px;overflow:hidden;background:#f4f4f8;border-bottom:1px solid var(--border)}
+.ccard-img-wrap img{display:block;width:100%;height:100%;max-width:100%;object-fit:cover;object-position:top center;transition:transform .5s ease}
+.ccard:hover .ccard-img-wrap img{transform:scale(1.04)}
+.ccard-body{padding:18px 20px}
 .cprov{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:10px}
 .cname{font-size:16px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:10px}
 .cst{font-size:13px;font-weight:500}
@@ -242,7 +246,6 @@ footer{border-top:1px solid var(--border);padding:28px 64px;display:flex;justify
   #hero{padding:110px 22px 60px}
   .about-grid,.skgrid,.ctgrid{grid-template-columns:1fr;gap:40px}
   .pgrid{grid-template-columns:1fr}.pcard.feat{grid-column:span 1;grid-template-columns:1fr}
-  .cgrid{grid-template-columns:1fr 1fr}
   .jsem{grid-template-columns:1fr;gap:10px}
   .jsem-meta{flex-direction:row;align-items:center;gap:14px}
   .jsem-period{text-align:left}
@@ -456,7 +459,7 @@ footer{border-top:1px solid var(--border);padding:28px 64px;display:flex;justify
           <div class="skbar"><div class="skbh"><span class="skbn">Stakeholder Management</span><span class="skbp">88%</span></div><div class="skbt"><div class="skbf" data-w=".88"></div></div></div>
           <div class="skbar"><div class="skbh"><span class="skbn">Operations & Process Management</span><span class="skbp">85%</span></div><div class="skbt"><div class="skbf" data-w=".85"></div></div></div>
           <div class="skbar"><div class="skbh"><span class="skbn">CRM & Client Management</span><span class="skbp">80%</span></div><div class="skbt"><div class="skbf" data-w=".80"></div></div></div>
-          <div class="skbar"><div class="skbh"><span class="skbn">SQL — Foundations</span><span class="skbp">65%</span></div><div class="skbt"><div class="skbf" data-w=".65" style="background:linear-gradient(90deg,var(--gold),#f59e0b)"></div></div></div>
+           <div class="skbar"><div class="skbh"><span class="skbn">SQL</span><span class="skbp">45%</span></div><div class="skbt"><div class="skbf" data-w=".45"></div></div></div>
         </div>
       </div>
       <div class="rev d2">
@@ -489,7 +492,7 @@ footer{border-top:1px solid var(--border);padding:28px 64px;display:flex;justify
 <section id="certifications">
   <div class="wrap">
     <div class="sec-head rev"><div class="sec-num">05 · Credentials</div><h2 class="sec-title">Certifications <span class="dim">& Growth</span></h2></div>
- 
+
     <div style="font-size:12px;font-weight:600;color:#86efac;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px">Completed <span style="flex:1;height:1px;background:var(--border);display:inline-block"></span></div>
     <div class="cgrid rev d1">
       <div class="ccard">
@@ -520,7 +523,7 @@ footer{border-top:1px solid var(--border);padding:28px 64px;display:flex;justify
         </div>
       </div>
     </div>
- 
+
     <div class="cgrow rev d3">
       <div class="cgrow-title">Currently Getting Better At</div>
       <div class="cgrow-list">
